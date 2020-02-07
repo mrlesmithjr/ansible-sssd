@@ -1,0 +1,20 @@
+---
+- name: debian | Installing SSSD Packages
+  apt:
+    name: [
+        # "adcli",
+        "chrony",
+        "krb5-user",
+        # "libnss-sss",
+        # "libpam-sss",
+        "policykit-1",
+        # "realmd",
+        "samba",
+        # "samba-common-bin",
+        "sssd-tools",
+        "sssd",
+      ]
+    state: present
+  become: true
+  register: result
+  until: result is successful

@@ -1,0 +1,32 @@
+---
+# handlers file for ansible-sssd
+- name: restart chrony
+  service:
+    name: chrony
+    state: restarted
+  become: true
+
+- name: restart nmbd
+  service:
+    name: nmbd
+    state: restarted
+  become: true
+
+- name: restart smbd
+  service:
+    name: smbd
+    state: restarted
+  become: true
+
+- name: restart sssd
+  service:
+    name: sssd
+    state: restarted
+  become: true
+
+- name: reload systemd config
+  systemd:
+    name: sssd
+    state: restarted
+    daemon_reload: true
+  become: true

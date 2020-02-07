@@ -1,0 +1,21 @@
+{{ ansible_managed|comment }}
+
+[libdefaults]
+	ccache_type = 4
+	default_realm = {{ sssd_kerberos_realm|upper }}
+	dns_lookup_kdc = true
+	dns_lookup_realm = true
+	fcc-mit-ticketflags = true
+	forwardable = true
+	kdc_timesync = 1
+	proxiable = true
+	renew_lifetime = {{ sssd_kerberos_renew_lifetime }}
+	ticket_lifetime = {{ sssd_kerberos_ticket_lifetime }}
+
+[realms]
+	{{ sssd_kerberos_realm|upper }} = {
+		kdc = {{ hostvars[groups[sssd_domain_controllers_group][0]]['ansible_host'] }}
+		admin_server = {{ hostvars[groups[sssd_domain_controllers_group][0]]['ansible_host'] }}
+	}
+
+[domain_realm]

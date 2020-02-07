@@ -1,0 +1,24 @@
+{{ ansible_managed|comment }}
+[global]
+   client signing = yes
+   client use spnego = yes
+   dedicated keytab file = /etc/krb5.keytab
+   dns proxy = no
+   kerberos method = secrets and keytab
+   log file = /var/log/samba/log.%m
+   map to guest = bad user
+   max log size = 1000
+   obey pam restrictions = yes
+   pam password change = yes
+   panic action = /usr/share/samba/panic-action %d
+   passdb backend = tdbsam
+   passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
+   passwd program = /usr/bin/passwd %u
+   realm = {{ sssd_kerberos_realm|upper }}
+   security = ads
+   server role = standalone server
+   server string = %h server (Samba, Ubuntu)
+   syslog = 0
+   unix password sync = yes
+   usershare allow guests = yes
+   workgroup = {{ sssd_kerberos_realm.split('.')[0]|upper }}
