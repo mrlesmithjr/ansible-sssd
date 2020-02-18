@@ -1,11 +1,18 @@
 {{ ansible_managed|comment }}
 [sssd]
-services = nss, pam
+domains = {{ sssd_kerberos_realm|lower }}
 config_file_version = 2
-domains = {{ sssd_kerberos_realm|upper }}
+services = nss, pam, ssh
 
-[domain/{{ sssd_kerberos_realm|upper }}]
+[domain/{{ sssd_kerberos_realm|lower }}]
+ad_domain = {{ sssd_kerberos_realm|lower }}
+krb5_realm = {{ sssd_kerberos_realm|upper }}
+realmd_tags = manages-system joined-with-adcli
+cache_credentials = True
 id_provider = ad
+krb5_store_password_if_offline = True
+default_shell = /bin/bash
+ldap_id_mapping = False
+# use_fully_qualified_names = True
+fallback_homedir = /home/%d/%u
 access_provider = ad
-ad_server = {{ hostvars[groups[sssd_domain_controllers_group][0]]['ansible_host'] }}
-override_homedir = /home/%d/%u

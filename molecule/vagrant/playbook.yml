@@ -1,0 +1,13 @@
+---
+- name: Provision Domain Clients
+  hosts: domain_clients
+  roles:
+    - role: ansible-netplan
+      become: true
+    - role: ansible-etc-hosts
+    - role: ansible-ntp
+
+- name: Provision Domain Clients
+  hosts: domain_clients
+  roles:
+    - role: ansible-sssd

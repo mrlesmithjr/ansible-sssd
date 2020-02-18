@@ -1,15 +1,4 @@
 ---
-- name: config | Configuring Chrony
-  template:
-    src: etc/chrony/chrony.conf.j2
-    dest: /etc/chrony/chrony.conf
-    owner: root
-    group: root
-    mode: u=rw,g=r,o=r
-  become: true
-  notify:
-    - restart chrony
-
 - name: config | Configuring Kerberos
   template:
     src: etc/krb5.conf.j2
@@ -19,25 +8,51 @@
     mode: u=rw,g=r,o=r
   become: true
 
-# - name: config | Configuring Realm
-#   template:
-#     src: etc/realmd.conf.j2
-#     dest: /etc/realmd.conf
-#     owner: root
-#     group: root
-#   become: true
-
-- name: config | Configuring Samba
+- name: config | Configuring realmd
   template:
-    src: etc/samba/smb.conf.j2
-    dest: /etc/samba/smb.conf
+    src: etc/realmd.conf.j2
+    dest: /etc/realmd.conf
     owner: root
     group: root
     mode: u=rw,g=r,o=r
   become: true
-  notify:
-    - restart smbd
-    - restart nmbd
+
+- name: config | Capturing Configuration State
+  shell: "realm discover {{ sssd_kerberos_realm|upper }} | grep configured | awk -F: '{ print $2 }'"
+  become: true
+  register: _realm_configuration_state
+  changed_when: false
+
+- name: config | Set Configuration State
+  set_fact:
+    _realm_configured: "{{ _realm_configuration_state['stdout'].strip() }}"
+
+- name: config | Initializing Kerberos
+  expect:
+    command: "kinit {{ sssd_domain_admin_user }}@{{ sssd_kerberos_realm|upper }}"
+    responses:
+      Password for *: "{{ sssd_domain_admin_password }}"
+  become: true
+  when: _realm_configured == 'no'
+
+- name: config | Joining Domain
+  expect:
+    command: /bin/bash -c "realm join {{ sssd_kerberos_realm|upper }} -U {{ sssd_domain_admin_user }}@{{ sssd_kerberos_realm|upper }}"
+    responses:
+      Password for *: "{{ sssd_domain_admin_password }}"
+  become: true
+  when: _realm_configured == 'no'
+# - name: config | Configuring Samba
+#   template:
+#     src: etc/samba/smb.conf.j2
+#     dest: /etc/samba/smb.conf
+#     owner: root
+#     group: root
+#     mode: u=rw,g=r,o=r
+#   become: true
+#   notify:
+#     - restart smbd
+#     - restart nmbd
 
 - name: config | Configuring SSSD
   template:
@@ -50,6 +65,14 @@
   notify:
     - restart sssd
 
+- name: config | Configuring /etc/pam.d/common-session
+  template:
+    src: etc/pam.d/common-session.j2
+    dest: /etc/pam.d/common-session
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  become: true
 # - name: update systemd service unit
 #   ini_file:
 #     path: /lib/systemd/system/sssd.service
@@ -66,11 +89,3 @@
 #       option: Restart
 #       value: always
 #   notify: reload systemd config
-
-- name: config | Configuring /etc/hosts
-  lineinfile:
-    path: /etc/hosts
-    regexp: "^{{ hostvars[inventory_hostname]['ansible_host'] + ' ' + ansible_hostname }}"
-    line: "{{ hostvars[inventory_hostname]['ansible_host'] + ' ' + ansible_hostname + ' ' + ansible_hostname + '.' + sssd_primary_domain_name }}"
-    state: present
-  become: true
