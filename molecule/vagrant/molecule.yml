@@ -47,6 +47,9 @@ provisioner:
   name: ansible
   lint:
     name: ansible-lint
+    options:
+      x:
+        - 306
   playbooks:
     converge: playbook.yml
   inventory:
@@ -83,6 +86,7 @@ provisioner:
         ntp_pri_domain_name: "{{ pri_domain_name }}"
         ntp_servers:
           - 192.168.250.10
+        sssd_config: true
       domain_controllers:
         ansible_connection: winrm
         ansible_password: vagrant

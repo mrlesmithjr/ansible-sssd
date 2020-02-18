@@ -1,11 +1,14 @@
 ---
 # defaults file for ansible-sssd
-sssd_domain_admin_user: Administrator
+sssd_config: false
+
 sssd_domain_admin_password: vagrant
+sssd_domain_admin_user: Administrator
+
+sssd_domain_controllers_group: domain_controllers
 
 sssd_kerberos_realm: "{{ sssd_primary_domain_name }}"
 sssd_kerberos_renew_lifetime: 7d
 sssd_kerberos_ticket_lifetime: 24h
-# sssd_domain_controllers_group: "{{ hostvars[groups['domain_controllers'][0]]['ansible_host'] }}"
-sssd_domain_controllers_group: domain_controllers
+
 sssd_primary_domain_name: vagrant.local

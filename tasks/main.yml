@@ -7,3 +7,4 @@
   when: ansible_os_family == "RedHat"
 
 - include_tasks: config.yml
+  when: sssd_config|bool

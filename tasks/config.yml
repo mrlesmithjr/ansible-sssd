@@ -17,31 +17,49 @@
     mode: u=rw,g=r,o=r
   become: true
 
-- name: config | Capturing Configuration State
-  shell: "realm discover {{ sssd_kerberos_realm|upper }} | grep configured | awk -F: '{ print $2 }'"
-  become: true
-  register: _realm_configuration_state
-  changed_when: false
+# - name: config | Capturing Configuration State
+#   shell: "realm discover {{ sssd_kerberos_realm|upper }} | grep configured | awk -F: '{ print $2 }'"
+#   become: true
+#   register: _realm_configuration_state
+#   changed_when: false
 
-- name: config | Set Configuration State
-  set_fact:
-    _realm_configured: "{{ _realm_configuration_state['stdout'].strip() }}"
+# - name: config | Set Configuration State
+#   set_fact:
+#     _realm_configured: "{{ _realm_configuration_state['stdout'].strip() }}"
 
-- name: config | Initializing Kerberos
-  expect:
-    command: "kinit {{ sssd_domain_admin_user }}@{{ sssd_kerberos_realm|upper }}"
-    responses:
-      Password for *: "{{ sssd_domain_admin_password }}"
+# - name: config | Initializing Kerberos
+#   expect:
+#     command: "kinit {{ sssd_domain_admin_user }}@{{ sssd_kerberos_realm|upper }}"
+#     responses:
+#       Password for *: "{{ sssd_domain_admin_password }}"
+#   become: true
+#   when: _realm_configured == 'no'
+- name: config | Checking Domain Join Status
+  stat:
+    path: /etc/sssd/.ad_joined
+  register: _domain_joined
   become: true
-  when: _realm_configured == 'no'
+
+# - name: config | Joining Domain
+#   expect:
+#     command: /bin/bash -c "realm join {{ sssd_kerberos_realm|lower }} --install='/'"
+#     responses:
+#       Password for *: "{{ sssd_domain_admin_password }}"
+#   become: true
+#   when: not _domain_joined['stat']['exists']
 
 - name: config | Joining Domain
-  expect:
-    command: /bin/bash -c "realm join {{ sssd_kerberos_realm|upper }} -U {{ sssd_domain_admin_user }}@{{ sssd_kerberos_realm|upper }}"
-    responses:
-      Password for *: "{{ sssd_domain_admin_password }}"
+  shell: echo {{ sssd_domain_admin_password }} | sudo realm join -U "{{ sssd_domain_admin_user }}" {{ sssd_kerberos_realm|lower }} --install='/'
   become: true
-  when: _realm_configured == 'no'
+  when: not _domain_joined['stat']['exists']
+
+- name: config | Marking Domain Joined
+  file:
+    path: /etc/sssd/.ad_joined
+    state: touch
+  become: true
+  when: not _domain_joined['stat']['exists']
+
 # - name: config | Configuring Samba
 #   template:
 #     src: etc/samba/smb.conf.j2
