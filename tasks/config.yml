@@ -48,7 +48,7 @@
 #   become: true
 #   when: not _domain_joined['stat']['exists']
 
-- name: config | Joining Domain
+- name: config | Joining Domain # noqa 306
   shell: echo {{ sssd_domain_admin_password }} | sudo realm join -U "{{ sssd_domain_admin_user }}" {{ sssd_kerberos_realm|lower }} --install='/'
   become: true
   when: not _domain_joined['stat']['exists']
