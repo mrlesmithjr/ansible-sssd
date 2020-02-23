@@ -1,1 +1,10 @@
 ---
+- name: redhat | Installing SSSD Packages
+  yum:
+    name: "{{ sssd_packages }}"
+    state: present
+  become: true
+  register: result
+  until: result is successful
+  when:
+    - ansible_distribution != "Fedora"

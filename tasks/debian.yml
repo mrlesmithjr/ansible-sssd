@@ -1,18 +1,7 @@
 ---
 - name: debian | Installing SSSD Packages
   apt:
-    name:
-      - adcli
-      - krb5-user
-      - libnss-sss
-      - libpam-sss
-      - packagekit
-      - python-pexpect
-      - python3-pexpect
-      - realmd
-      - samba-common-bin
-      - sssd
-      - sssd-tools
+    name: "{{ sssd_packages }}"
     state: present
   become: true
   register: result

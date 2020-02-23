@@ -1,0 +1,35 @@
+---
+- name: set_facts | Setting Debian/Ubuntu Facts
+  set_fact:
+    sssd_packages:
+      - adcli
+      - krb5-user
+      - libnss-sss
+      - libpam-sss
+      - oddjob
+      - oddjob-mkhomedir
+      - packagekit
+      - python-pexpect
+      - python3-pexpect
+      - realmd
+      - samba-common-bin
+      - sssd
+      - sssd-tools
+  when:
+    - ansible_os_family == "Debian"
+
+- name: set_facts | Setting RedHat Facts
+  set_fact:
+    sssd_packages:
+      - adcli
+      - krb5-workstation
+      - oddjob
+      - oddjob-mkhomedir
+      - openldap-clients
+      - policycoreutils-python
+      - realmd
+      - samba-common
+      - samba-common-tools
+      - sssd
+  when:
+    - ansible_os_family == "RedHat"
